@@ -42,57 +42,58 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: buscaPreco(),
-        builder: (context, snapshot) {
-          String resultado;
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              resultado = "Carregando....";
-              break;
-            case ConnectionState.done:
-              if (snapshot.hasError) {
-                resultado = "Erro ao carregar dados.";
-              } else {
-                resultado = snapshot.data["BRL"]["buy"].toString();
-              }
-          }
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(widget.title),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Image.asset('images/bitcoin.png'),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child:
-                        Text("R\$ " + resultado, style: TextStyle(fontSize: 36)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 64),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 70,
-                      child: RaisedButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0)),
-                          color: Colors.amber,
-                          child: Text(
-                            'Atualizar',
-                            style: TextStyle(fontSize: 32),
-                          ),
-                          textColor: Colors.white,
-                          onPressed: () => buscaPreco()),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Image.asset('images/bitcoin.png'),
+            Padding(
+                padding: const EdgeInsets.only(top: 32),
+                child: FutureBuilder(
+                    future: buscaPreco(),
+                    builder: (context, snapshot) {
+                      String resultado;
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                          break;
+                        case ConnectionState.done:
+                          if (snapshot.hasError) {
+                            resultado = "Erro ao carregar dados.";
+                          } else {
+                            resultado = snapshot.data["BRL"]["buy"].toString();
+                          }
+                      }
+                      return Text("R\$ " + resultado,
+                          style: TextStyle(fontSize: 36));
+                    })),
+            Padding(
+              padding: const EdgeInsets.only(top: 64),
+              child: SizedBox(
+                width: double.infinity,
+                height: 70,
+                child: RaisedButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0)),
+                    color: Colors.amber,
+                    child: Text(
+                      'Atualizar',
+                      style: TextStyle(fontSize: 32),
                     ),
-                  )
-                ],
+                    textColor: Colors.white,
+                    onPressed: () => buscaPreco()),
               ),
-            ),
-          );
-        });
+            )
+          ],
+        ),
+      ),
+    );
   }
 }
