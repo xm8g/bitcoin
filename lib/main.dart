@@ -32,60 +32,67 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String _preco = '';
-  String url = 'https://blockchain.info/ticker';
 
-
-
-  void buscaPreco() async {
-
+  Future<Map> buscaPreco() async {
+    String url = 'https://blockchain.info/ticker';
     Response response = await http.get(url);
-
-    setState(() {
-      if (response.statusCode == 200) {
-        Map<String, dynamic> retorno = json.decode(response.body);
-        _preco = retorno["BRL"]["buy"].toString();
-      }
-    });
+    return json.decode(response.body);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.asset('images/bitcoin.png'),
-            Padding(
-              padding: const EdgeInsets.only(top: 32),
-              child: Text("R\$ " + _preco, style: TextStyle(fontSize: 36)),
+    return FutureBuilder(
+        future: buscaPreco(),
+        builder: (context, snapshot) {
+          String resultado;
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              resultado = "Carregando....";
+              break;
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                resultado = "Erro ao carregar dados.";
+              } else {
+                resultado = snapshot.data["BRL"]["buy"].toString();
+              }
+          }
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.title),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 64),
-              child: SizedBox(
-                width: double.infinity,
-                height: 70,
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)
+            body: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset('images/bitcoin.png'),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32),
+                    child:
+                        Text("R\$ " + resultado, style: TextStyle(fontSize: 36)),
                   ),
-                  color: Colors.amber,
-                  child: Text('Atualizar', style: TextStyle(fontSize: 32),),
-                  textColor: Colors.white,
-
-                  onPressed: () => buscaPreco()
-                ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 64),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 70,
+                      child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0)),
+                          color: Colors.amber,
+                          child: Text(
+                            'Atualizar',
+                            style: TextStyle(fontSize: 32),
+                          ),
+                          textColor: Colors.white,
+                          onPressed: () => buscaPreco()),
+                    ),
+                  )
+                ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+          );
+        });
   }
 }
